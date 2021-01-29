@@ -32,7 +32,7 @@ jobs:
       - name: Azure authentication
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS  }}
+          creds: ${{ secrets.POI_PUBLISH_PROFILE  }}
       - name: Swap staging to production
         run: az webapp deployment slot swap --name openhack3mg4iju8poi  --resource-group openhack3mg4iju8rg --slot staging --target-slot production
       - name: Validate Production build
