@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Push 
+      - name: Docker Build and Push 
         uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -22,11 +22,19 @@ jobs:
           tag_with_ref: true
           dockerfile: ./apis/poi/web/Dockerfile
           path: apis/poi/web
-      - name: 'Deploy to Azure WebApp'
+      - name: 'Deploy to Staging'
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'openhack3mg4iju8poi'    
           publish-profile: ${{ secrets.POI_PUBLISH_PROFILE }}
+          slot-name: staging
           package: 'apis/poi'
-
-   
+          images: openhack3mg4iju8acr.azurecr.io/apis/poi:${{github.run_number}}
+      - name: Swap staging to production
+        run: az webapp deployment slot swap --name openhack3mg4iju8poi  --resource-group openhack3mg4iju8rg --slot staging --target-slot production
+      - name: Validate Production build
+        run: sed -i 's/<--tag-->/${{github.run_number}}/g' apis/poi/webvalidate/validate.json 
+      - name: Build Validation Container
+        run: docker build -t poivalidate apis/poi/webvalidate
+      - name: Web Validate 
+        run: ./run.sh poivalidate $prod_url 
