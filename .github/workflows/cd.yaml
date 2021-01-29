@@ -45,10 +45,49 @@ jobs:
         with:
           publish-profile: ${{ secrets.STAGE_AZURE_CREDENTIALS }}
           app-name: 'openhack3mg4iju8tripviewer'
-          images: 'openhack3mg4iju8acr.azurecr.io/openhack2021/v1:${{ github.sha }}'
+          images: 'openhack3mg4iju8acr.azurecr.io/openhack2021/v1'
           slot-name: openhack3mg4iju8tripviewer-stage
+
+      - id: stage_healthcheck
+        name: Validate Stage Healthcheck
+        run: |
+          status=$(curl -sS "https://openhack3mg4iju8tripviewer-openhack3mg4iju8tripviewer-stage.azurewebsites.net/api/healthcheck/trips" | jq .status)
+
+          echo "${status}"
+          echo "::set-output name=STATUS::${status}"
 
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.TRIPS_AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Promote Deployment - Swap Stage with Production
+        uses: azure/CLI@v1
+        if: steps.stage_healthcheck.outputs.STATUS == '"healthy"'
+        with:
+          azcliversion: 2.18.0
+          inlineScript: |
+            az webapp deployment slot swap \
+              -g openhack3mg4iju8rg \
+              -n openhack3mg4iju8tripviewer \
+              --slot openhack3mg4iju8tripviewer-stage \
+              --target-slot production
+
+      - id: prod_healthcheck
+        name: Validate Production Healthcheck
+        run: |
+          status=$(curl -sS "http://openhack3mg4iju8tripviewer.azurewebsites.net/api/healthcheck/trips" | jq .status)
+          echo "${status}"
+          echo "::set-output name=STATUS::${status}"
+
+      - name: Rollback Deployment - Swap Production with Stage
+        uses: azure/CLI@v1
+        if: steps.prod_healthcheck.outputs.STATUS != '"healthy"'
+        with:
+          azcliversion: 2.18.0
+          inlineScript: |
+            az webapp deployment slot swap \
+              -g openhack3mg4iju8rg \
+              -n openhack3mg4iju8tripviewer \
+              --slot openhack3mg4iju8tripviewer-stage \
+              --target-slot production
