@@ -25,7 +25,8 @@ jobs:
       - name: 'Deploy to Azure WebApp'
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'openhack3mg4iju8poi'        
+          app-name: 'openhack3mg4iju8poi'    
+          publish-profile: ${{ secrets.POI_PUBLISH_PROFILE }}
           package: 'apis/poi'
 
    
