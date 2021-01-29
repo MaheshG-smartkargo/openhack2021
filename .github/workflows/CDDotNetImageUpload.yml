@@ -27,8 +27,7 @@ jobs:
         with:
           app-name: 'openhack3mg4iju8poi'    
           publish-profile: ${{ secrets.POI_PUBLISH_PROFILE }}
-          slot-name: staging
-          package: 'apis/poi'
+          slot-name: staging          
           images: openhack3mg4iju8acr.azurecr.io/apis/poi:${{github.run_number}}
       - name: Swap staging to production
         run: az webapp deployment slot swap --name openhack3mg4iju8poi  --resource-group openhack3mg4iju8rg --slot staging --target-slot production
