@@ -35,3 +35,9 @@ jobs:
           tag_with_ref: true
           dockerfile: ./apis/trips/Dockerfile
           path: apis/trips
+      
+      - name: publish the image
+        with:
+          publish-profile: ${{ secrets.PUBLISH_PROFILE_OPENHACK }}
+          app-name: 'openhack3mg4iju8userjava'
+          images: 'openhack3mg4iju8acr.azurecr.io/madhuresh/trips-go:${{ github.sha }}' 
