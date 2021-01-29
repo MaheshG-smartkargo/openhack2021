@@ -40,5 +40,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           publish-profile: ${{ secrets.PUBLISH_PROFILE_OPENHACK }}
-          app-name: 'openhack3mg4iju8userjava'
+          app-name: 'openhack3mg4iju8tripviewer'
           images: 'openhack3mg4iju8acr.azurecr.io/madhuresh/trips-go:${{ github.sha }}' 
