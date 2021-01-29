@@ -43,7 +43,7 @@ jobs:
       - name: publish the image on stage env
         uses: azure/webapps-deploy@v2
         with:
-          publish-profile: ${{ secrets.STAGE_AZURE_CREDENTIALS }}
+          publish-profile: ${{ secrets.TRIPS_AZURE_CREDENTIALS }}
           app-name: 'openhack3mg4iju8tripviewer'
           images: 'openhack3mg4iju8acr.azurecr.io/openhack2021/v1'
           slot-name: openhack3mg4iju8tripviewer-stage
