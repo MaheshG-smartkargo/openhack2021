@@ -1,0 +1,43 @@
+name: .NET
+
+on: [push]
+env:
+  AZURE_WEBAPP_NAME: 'openhack3mg4iju8poi'
+  AZURE_WEBAPP_PACKAGE_PATH: 'apis/poi'      # set this to the path to your web app project, defaults to the repository root
+
+jobs:
+  package:
+    name: Push Docker image 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Docker Build and Push 
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}   
+          registry: openhack3mg4iju8acr.azurecr.io
+          repository: apis/poi
+          tag_with_ref: true
+          dockerfile: ./apis/poi/web/Dockerfile
+          path: apis/poi/web
+      - name: 'Deploy to Staging'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'openhack3mg4iju8poi'    
+          publish-profile: ${{ secrets.POI_PUBLISH_PROFILE_STAGE }}
+          slot-name: staging          
+          images: openhack3mg4iju8acr.azurecr.io/apis/poi:${{github.run_number}} 
+      - name: Azure authentication
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.POI_PUBLISH_PROFILE  }}
+      - name: Swap staging to production
+        run: az webapp deployment slot swap --name openhack3mg4iju8poi  --resource-group openhack3mg4iju8rg --slot staging --target-slot production
+      - name: Validate Production build
+        run: sed -i 's/<--tag-->/${{github.run_number}}/g' apis/poi/webvalidate/validate.json 
+      - name: Build Validation Container
+        run: docker build -t poivalidate apis/poi/webvalidate
+      - name: Web Validate 
+        run: ./run.sh poivalidate $prod_url 
