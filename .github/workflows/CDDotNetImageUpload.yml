@@ -28,7 +28,11 @@ jobs:
           app-name: 'openhack3mg4iju8poi'    
           publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
           slot-name: staging          
-          images: openhack3mg4iju8acr.azurecr.io/apis/poi:${{github.run_number}}
+          images: openhack3mg4iju8acr.azurecr.io/apis/poi:${{github.run_number}} 
+      - name: Azure authentication
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS  }}
       - name: Swap staging to production
         run: az webapp deployment slot swap --name openhack3mg4iju8poi  --resource-group openhack3mg4iju8rg --slot staging --target-slot production
       - name: Validate Production build
